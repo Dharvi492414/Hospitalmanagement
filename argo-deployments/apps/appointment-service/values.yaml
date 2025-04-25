@@ -1,0 +1,21 @@
+image:
+  repository: your-dockerhub/patient-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  targetPort: 3001
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: appointment.example.com
+      paths:
+        - path: /
+          pathType: Prefix

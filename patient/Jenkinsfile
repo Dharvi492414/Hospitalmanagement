@@ -1,0 +1,77 @@
+pipeline {
+  agent any
+
+  environment {
+    SERVICE = 'patient-service'
+    DOCKER_REGISTRY = 'yourdockerhub' // e.g. docker.io/yourusername
+    DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
+    GIT_CREDENTIALS_ID = 'git-creds'
+    GIT_REPO = 'git@github.com:your-org/your-repo.git'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git url: "${env.GIT_REPO}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
+      }
+    }
+
+    stage('Install & Build JS') {
+      steps {
+        dir("${SERVICE}") {
+          sh 'npm install'
+          sh 'npm run build'
+        }
+      }
+    }
+
+    stage('Docker Build') {
+      steps {
+        script {
+          env.IMAGE_TAG = "${SERVICE}-${env.BUILD_NUMBER}"
+          env.IMAGE_FULL = "${DOCKER_REGISTRY}/${SERVICE}:${IMAGE_TAG}"
+
+          dir("${SERVICE}") {
+            sh "docker build -t ${IMAGE_FULL} ."
+          }
+        }
+      }
+    }
+
+    stage('Docker Push') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
+            sh "docker push ${IMAGE_FULL}"
+          }
+        }
+      }
+    }
+
+    stage('Update Helm Chart') {
+      steps {
+        script {
+          def valuesPath = "helm-charts/${SERVICE}/values.yaml"
+          sh """
+            sed -i 's|repository:.*|repository: ${DOCKER_REGISTRY}/${SERVICE}|' ${valuesPath}
+            sed -i 's|tag:.*|tag: ${IMAGE_TAG}|' ${valuesPath}
+          """
+        }
+      }
+    }
+
+    stage('Git Commit & Push') {
+      steps {
+        script {
+          sh """
+            git config user.name "jenkins"
+            git config user.email "ci@jenkins.com"
+            git add helm-charts/${SERVICE}/values.yaml
+            git commit -m "Update ${SERVICE} image tag to ${IMAGE_TAG}"
+            git push origin HEAD:main
+          """
+        }
+      }
+    }
+  }
+}
