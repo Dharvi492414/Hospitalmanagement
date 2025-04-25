@@ -31,7 +31,7 @@ pipeline {
           env.IMAGE_TAG = "${SERVICE}-${env.BUILD_NUMBER}"
           env.IMAGE_FULL = "${DOCKER_REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 
-          dir("appointment-service") {
+          dir("patient-service") {
              echo "Building Docker image: ${IMAGE_FULL}"
              sh "docker build -t ${IMAGE_FULL} ."
           }
