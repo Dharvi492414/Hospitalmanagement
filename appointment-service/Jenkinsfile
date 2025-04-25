@@ -3,8 +3,8 @@ pipeline {
 
   environment {
     SERVICE = 'appointment-service'
-    DOCKER_REGISTRY = 'https://hub.docker.com/repositories/kumaran492414' // e.g. docker.io/yourusername
-    DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
+    DOCKER_REGISTRY = 'kumaran492414' 
+    DOCKER_CREDENTIALS_ID = 'docker-creds'
     GIT_CREDENTIALS_ID = 'git-creds'
     GIT_REPO = 'https://github.com/Dharvi492414/Hospitalmanagement.git'
   }
@@ -12,7 +12,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git url: "${env.GIT_REPO}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
+        git branch: 'main', credentialsId: "${env.GIT_CREDENTIALS_ID}", url: "${env.GIT_REPO}"
       }
     }
 
@@ -31,8 +31,9 @@ pipeline {
           env.IMAGE_TAG = "${SERVICE}-${env.BUILD_NUMBER}"
           env.IMAGE_FULL = "${DOCKER_REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 
-          dir("${SERVICE}") {
-            sh "docker build -t ${IMAGE_FULL} ."
+          dir("appointment-service") {
+             echo "Building Docker image: ${IMAGE_FULL}"
+             sh "docker build -t ${IMAGE_FULL} ."
           }
         }
       }
@@ -51,7 +52,7 @@ pipeline {
     stage('Update Helm Chart') {
       steps {
         script {
-          def valuesPath = "Hospitalmanagement/argo-deployments/apps/${SERVICE}/values.yaml"
+          def valuesPath = "argo-deployments/apps/${SERVICE}/values.yaml"
           sh """
             sed -i 's|repository:.*|repository: ${DOCKER_REGISTRY}/${SERVICE}|' ${valuesPath}
             sed -i 's|tag:.*|tag: ${IMAGE_TAG}|' ${valuesPath}
@@ -63,13 +64,15 @@ pipeline {
     stage('Git Commit & Push') {
       steps {
         script {
-          sh """
-            git config user.name "Dharvi492414"
-            git config user.email "g.kumaran1008@gmail.com"
-            git add Hospitalmanagement/argo-deployments/apps/${SERVICE}/values.yaml
-            git commit -m "Update ${SERVICE} image tag to ${IMAGE_TAG}"
-            git push origin HEAD:main
-          """
+          withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+            sh '''
+              git config user.name "$GIT_USER"
+              git config user.email "g.kumaran1008@gmail.com"
+              git add argo-deployments/apps/appointment-service/values.yaml
+              git commit -m "Update appointment-service image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+              git push https://$GIT_USER:$GIT_TOKEN@github.com/Dharvi492414/Hospitalmanagement.git HEAD:main
+             '''
+           }
         }
       }
     }
