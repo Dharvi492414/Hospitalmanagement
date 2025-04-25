@@ -1,6 +1,6 @@
 image:
-  repository: https://hub.docker.com/repositories/kumaran492414/patient-service
-  tag: latest
+  repository: kumaran492414/appointment-service
+  tag: appointment-service-31
   pullPolicy: IfNotPresent
 
 service:
