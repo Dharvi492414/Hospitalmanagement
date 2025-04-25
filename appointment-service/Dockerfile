@@ -4,11 +4,8 @@ FROM node:18
 # Set working directory
 WORKDIR /usr/src/app
 
-# Copy package files first
-COPY package*.json ./
-
 # Copy package files and install dependencies
-COPY appointment-service.js ./
+COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the app
