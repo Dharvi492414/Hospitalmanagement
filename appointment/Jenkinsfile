@@ -3,10 +3,10 @@ pipeline {
 
   environment {
     SERVICE = 'appointment-service'
-    DOCKER_REGISTRY = 'yourdockerhub' // e.g. docker.io/yourusername
+    DOCKER_REGISTRY = 'https://hub.docker.com/repositories/kumaran492414' // e.g. docker.io/yourusername
     DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
     GIT_CREDENTIALS_ID = 'git-creds'
-    GIT_REPO = 'git@github.com:your-org/your-repo.git'
+    GIT_REPO = 'https://github.com/Dharvi492414/Hospitalmanagement.git'
   }
 
   stages {
@@ -51,7 +51,7 @@ pipeline {
     stage('Update Helm Chart') {
       steps {
         script {
-          def valuesPath = "helm-charts/${SERVICE}/values.yaml"
+          def valuesPath = "Hospitalmanagement/argo-deployments/apps/${SERVICE}/values.yaml"
           sh """
             sed -i 's|repository:.*|repository: ${DOCKER_REGISTRY}/${SERVICE}|' ${valuesPath}
             sed -i 's|tag:.*|tag: ${IMAGE_TAG}|' ${valuesPath}
@@ -64,9 +64,9 @@ pipeline {
       steps {
         script {
           sh """
-            git config user.name "jenkins"
-            git config user.email "ci@jenkins.com"
-            git add helm-charts/${SERVICE}/values.yaml
+            git config user.name "Dharvi492414"
+            git config user.email "g.kumaran1008@gmail.com"
+            git add Hospitalmanagement/argo-deployments/apps/${SERVICE}/values.yaml
             git commit -m "Update ${SERVICE} image tag to ${IMAGE_TAG}"
             git push origin HEAD:main
           """

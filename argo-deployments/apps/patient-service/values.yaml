@@ -1,5 +1,5 @@
 image:
-  repository: your-dockerhub/patient-service
+  repository: https://hub.docker.com/repositories/kumaran492414/patient-service
   tag: latest
   pullPolicy: IfNotPresent
 
