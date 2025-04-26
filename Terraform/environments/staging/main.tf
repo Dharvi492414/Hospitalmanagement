@@ -15,6 +15,13 @@ module "eks" {
   desired_size    = 2
   max_size        = 3
   min_size        = 1
+  cluster_enabled_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+    "controllerManager",
+    "scheduler"
+  ]
 }
 
 module "security_groups" {

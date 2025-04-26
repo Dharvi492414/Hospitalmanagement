@@ -3,7 +3,7 @@ resource "aws_eks_cluster" "main" {
   role_arn = module.iam.eks_role_arn
   vpc_config {
     subnet_ids = module.vpc.private_subnet_ids
-  }
+  } 
 }
 
 resource "aws_eks_node_group" "main" {

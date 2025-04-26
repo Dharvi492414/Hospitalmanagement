@@ -25,3 +25,9 @@ resource "aws_iam_role" "node" {
     }]
   })
 }
+
+resource "aws_iam_policy_attachment" "cloudwatch_logs" {
+  name       = "cloudwatch-logs-eks"
+  roles      = [aws_iam_role.eks_node_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
