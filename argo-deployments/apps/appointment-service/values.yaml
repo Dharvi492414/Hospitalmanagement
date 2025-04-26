@@ -1,6 +1,6 @@
 image:
   repository: kumaran492414/appointment-service
-  tag: appointment-service-31
+  tag: appointment-service-2
   pullPolicy: IfNotPresent
 
 service:
